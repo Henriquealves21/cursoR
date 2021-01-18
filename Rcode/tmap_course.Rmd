@@ -243,143 +243,143 @@ tm_shape(Shp) +
   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2)
 ```
 
-<!-- ## Mapas interativos COVID-$19$ -->
+ ## Mapas interativos COVID-$19$ 
 
-<!-- Vamos agora construir mapas interativos com dados de COVID-$19$, a doença que hoje é a maior preucupação das áreas correlatas da saúde no Brasil e no mundo. O `R` possui um pacote chamado `covid19br` (@covid19br) que possui dados coletados, tanto no Brasil quanto no mundo, a cada semana desde o início da pandemia, sendo que esse pacote é atualizado semanalmente. Nesse momento é necessário lembrar que o pacote em questão já deve estar instalado no seu `R` em sua máquina. -->
+ Vamos agora construir mapas interativos com dados de COVID-$19$, a doença que hoje é a maior preucupação das áreas correlatas da saúde no Brasil e no mundo. O `R` possui um pacote chamado `covid19br` (@covid19br) que possui dados coletados, tanto no Brasil quanto no mundo, a cada semana desde o início da pandemia, sendo que esse pacote é atualizado semanalmente. Nesse momento é necessário lembrar que o pacote em questão já deve estar instalado no seu `R` em sua máquina. 
 
-<!-- ```{r , echo=TRUE, message=FALSE, warning=FALSE} -->
-<!-- library(covid19br) -->
-<!-- ``` -->
+ ```{r , echo=TRUE, message=FALSE, warning=FALSE} 
+ library(covid19br) 
+ ``` 
 
-<!-- Vamos agora construir mapas interativos ilustrando a situação atual do Brasil, por exemplo, por unidade de federação, em relação ao surgimento de casos novos e será exibido em forma de um mapa. Para tal, vamos utilizar os seguintes comandos. -->
+ Vamos agora construir mapas interativos ilustrando a situação atual do Brasil, por exemplo, por unidade de federação, em relação ao surgimento de casos novos e será exibido em forma de um mapa. Para tal, vamos utilizar os seguintes comandos. 
 
-<!-- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} -->
-<!-- i=2021 -->
-<!-- data <- downloadCovid19("states") -->
-<!-- View(data) -->
-<!-- data_new <- data %>% -->
-<!-- filter(date == "2021-01-02") %>% -->
-<!-- mutate(sigla = state) -->
-<!-- View(data_new) -->
-<!-- shape <- inner_join(uf, data_new, "sigla") -->
-<!-- tmap_mode("plot") -->
-<!-- tm_shape(shape) + -->
-<!--   tm_fill("newCases", style = "cat", n = 27,  -->
-<!--           palette = heat.colors(27, rev = TRUE, alpha = 0.5) , -->
-<!--           title = paste("Novos casos - COVID-19 - 2021-01-02"))+ -->
-<!--   tm_borders(col="darkgray", lwd=0.7)+ -->
-<!--   tm_shape(shape)+ -->
-<!--   tm_borders(col= "black", lwd= 1.5)+ -->
-<!--   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", -->
-<!--           auto.palette.mapping=TRUE, fontfamily = "serif")+ -->
-<!--   tm_layout(legend.title.size = 1, -->
-<!--             legend.text.size = 0.8, -->
-<!--             legend.position = c("right","bottom"), -->
-<!--             legend.bg.color = "white", -->
-<!--             legend.bg.alpha = .8, -->
-<!--             legend.height = 0.4, legend.hist.height = 0.4, -->
-<!--             legend.width = 0.4,legend.hist.width = 0.9, -->
-<!--             legend.outside = FALSE, -->
-<!--             frame = FALSE, bg.color="white") + -->
-<!--   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) -->
-<!-- ``` -->
+ ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
+ i=2021 
+ data <- downloadCovid19("states") 
+ View(data) 
+ data_new <- data %>% 
+ filter(date == "2021-01-02") %>% 
+ mutate(sigla = state) 
+ View(data_new) 
+ shape <- inner_join(uf, data_new, "sigla") 
+ tmap_mode("plot") 
+ tm_shape(shape) + 
+   tm_fill("newCases", style = "cat", n = 27,  
+           palette = heat.colors(27, rev = TRUE, alpha = 0.5) , 
+           title = paste("Novos casos - COVID-19 - 2021-01-02"))+ 
+   tm_borders(col="darkgray", lwd=0.7)+ 
+   tm_shape(shape)+ 
+   tm_borders(col= "black", lwd= 1.5)+ 
+   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", 
+           auto.palette.mapping=TRUE, fontfamily = "serif")+ 
+   tm_layout(legend.title.size = 1, 
+             legend.text.size = 0.8, 
+             legend.position = c("right","bottom"), 
+             legend.bg.color = "white", 
+             legend.bg.alpha = .8, 
+             legend.height = 0.4, legend.hist.height = 0.4, 
+             legend.width = 0.4,legend.hist.width = 0.9, 
+             legend.outside = FALSE, 
+             frame = FALSE, bg.color="white") + 
+   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
+ ``` 
 
-<!-- Vamos agora utilizar o mesmo conjunto de dados `shape` criado anteriormente para construir alguns outros mapas a partir de alguns indicadores, como a `letalidade` e `incidência` das unidades federativas brasileiras considerando o dia 10-01-2021. -->
+ Vamos agora utilizar o mesmo conjunto de dados `shape` criado anteriormente para construir alguns outros mapas a partir de alguns indicadores, como a `letalidade` e `incidência` das unidades federativas brasileiras considerando o dia 10-01-2021. 
 
-<!-- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} -->
-<!-- shape <- inner_join(uf, data_new, "sigla") %>% -->
-<!--   mutate(letalidade = accumDeaths/accumCases*100) -->
-<!-- tmap_mode("plot") -->
-<!-- tm_shape(shape) + -->
-<!--   tm_fill("letalidade", style = "quantile", n = 5,  -->
-<!--           palette = "Reds" , -->
-<!--           title = paste("Letalidade COVID-19 - 10-01-2021"))+ -->
-<!--   tm_borders(col="darkgray", lwd=0.7)+ -->
-<!--   tm_shape(shape)+ -->
-<!--   tm_borders(col= "black", lwd= 1.5) + -->
-<!--   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", -->
-<!--           auto.palette.mapping=TRUE, fontfamily = "serif")+ -->
-<!--   tm_layout(legend.title.size = 0.8, -->
-<!--             legend.text.size = 0.6, -->
-<!--             legend.position = c("right","bottom"), -->
-<!--             legend.bg.color = "white", -->
-<!--             legend.bg.alpha = .8, -->
-<!--             legend.height = 0.4, legend.hist.height = 0.4, -->
-<!--             legend.width = 0.4,legend.hist.width = 0.9, -->
-<!--             legend.outside = TRUE, -->
-<!--             frame = FALSE, bg.color="white") + -->
-<!--   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) -->
-<!-- ``` -->
+ ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
+ shape <- inner_join(uf, data_new, "sigla") %>% 
+   mutate(letalidade = accumDeaths/accumCases*100) 
+ tmap_mode("plot") 
+ tm_shape(shape) + 
+   tm_fill("letalidade", style = "quantile", n = 5,  
+           palette = "Reds" , 
+           title = paste("Letalidade COVID-19 - 10-01-2021"))+ 
+   tm_borders(col="darkgray", lwd=0.7)+ 
+   tm_shape(shape)+ 
+   tm_borders(col= "black", lwd= 1.5) + 
+   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", 
+           auto.palette.mapping=TRUE, fontfamily = "serif")+ 
+   tm_layout(legend.title.size = 0.8, 
+             legend.text.size = 0.6, 
+             legend.position = c("right","bottom"), 
+             legend.bg.color = "white", 
+             legend.bg.alpha = .8, 
+             legend.height = 0.4, legend.hist.height = 0.4, 
+             legend.width = 0.4,legend.hist.width = 0.9, 
+             legend.outside = TRUE, 
+             frame = FALSE, bg.color="white") + 
+   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
+ ``` 
 
-<!-- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} -->
-<!-- shape <- inner_join(uf, data_new, "sigla") %>% -->
-<!--   mutate( incidencia = newCases/pop*100) -->
-<!-- tmap_mode("plot") -->
-<!-- tm_shape(shape) + -->
-<!--   tm_fill("incidencia", style = "quantile", n = 5, alpha= 0.8,   -->
-<!--           palette = "PuBu" , contrast=.7,  -->
-<!--           title = paste("Incidência COVID-19 - 10-01-2021"))+ -->
-<!--   tm_borders(col="darkgray", lwd=0.7)+ -->
-<!--   tm_shape(shape)+ -->
-<!--   tm_borders(col= "black", lwd= 1.5)+ -->
-<!--   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black",  -->
-<!--           auto.palette.mapping=TRUE, fontfamily = "serif")+ -->
-<!--   tm_layout(legend.title.size = 0.8, -->
-<!--             legend.text.size = 0.6, -->
-<!--             legend.position = c("right","bottom"), -->
-<!--             legend.bg.color = "white", -->
-<!--             legend.bg.alpha = .8, -->
-<!--             legend.height = 0.4, legend.hist.height = 0.4, -->
-<!--             legend.width = 0.4,legend.hist.width = 0.9, -->
-<!--             legend.outside = FALSE, -->
-<!--             frame = FALSE, bg.color="white") + -->
-<!--   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) -->
-<!-- ``` -->
+ ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
+ shape <- inner_join(uf, data_new, "sigla") %>% 
+   mutate( incidencia = newCases/pop*100) 
+ tmap_mode("plot") 
+ tm_shape(shape) + 
+   tm_fill("incidencia", style = "quantile", n = 5, alpha= 0.8,   
+           palette = "PuBu" , contrast=.7,  
+           title = paste("Incidência COVID-19 - 10-01-2021"))+ 
+   tm_borders(col="darkgray", lwd=0.7)+ 
+   tm_shape(shape)+ 
+   tm_borders(col= "black", lwd= 1.5)+ 
+   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black",  
+           auto.palette.mapping=TRUE, fontfamily = "serif")+ 
+   tm_layout(legend.title.size = 0.8, 
+             legend.text.size = 0.6, 
+             legend.position = c("right","bottom"), 
+             legend.bg.color = "white", 
+             legend.bg.alpha = .8, 
+             legend.height = 0.4, legend.hist.height = 0.4, 
+             legend.width = 0.4,legend.hist.width = 0.9, 
+             legend.outside = FALSE, 
+             frame = FALSE, bg.color="white") + 
+   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
+ ``` 
 
-<!-- Vamos agora produzir alguns mapas relacionados a desmatamentos, áreas não florestadas e hidrofrafias da Amazônia Legal brasileira. Os dados foram retirados do site [terrabrasilis](http://terrabrasilis.dpi.inpe.br/downloads/).  -->
+ Vamos agora produzir alguns mapas relacionados a desmatamentos, áreas não florestadas e hidrofrafias da Amazônia Legal brasileira. Os dados foram retirados do site [terrabrasilis](http://terrabrasilis.dpi.inpe.br/downloads/).  
 
-<!-- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} -->
-<!-- hidrografia_shape <- readOGR("hydrography.shp") -->
-<!-- hidrografia <- st_as_sf(hidrografia_shape, wkt = "geom") -->
-<!-- noforest_shape <- readOGR("no_forest.shp") -->
-<!-- noforest <- st_as_sf(noforest_shape, wkt = "geom") -->
-<!-- stateslegalamazon_shape <- readOGR("states_legal_amazon.shp") -->
-<!-- stateslegalamazon <- st_as_sf(stateslegalamazon_shape, wkt = "geom") -->
-<!-- limitslegalamazon_shape <- readOGR("brazilian_legal_amazon.shp") -->
-<!-- limitslegalamazon <- st_as_sf(limitslegalamazon_shape, wkt = "geom") -->
-<!-- areaindigenamazon_shape <- readOGR("indigeneous_area_legal_amazon.shp") -->
-<!-- areaindigenamazon <- st_as_sf(areaindigenamazon_shape, wkt = "geom") -->
-<!-- tmap_mode("plot") -->
-<!-- tm_shape(noforest) + -->
-<!--   tm_fill("AREA_KM", style = "quantile", n = 5, alpha= 0.8, -->
-<!--           palette = "Reds" , contrast=.7, -->
-<!--           title = paste("Área não florestada", "\n", -->
-<!--                         "Amazônia Legal - 2007"))+ -->
-<!--   tm_shape(areaindigenamazon) + -->
-<!--   tm_fill("modalidade", style = "cat", n = 4, alpha= 0.8,   -->
-<!--           palette = "-BrBG" , contrast=.7,  -->
-<!--           title = paste("Área indígena", "\n", -->
-<!--                         "Amazônia Legal"))+ -->
-<!--   tm_shape(hidrografia) + -->
-<!--   tm_fill("AREA_KM", style = "quantile", n = 5, alpha= 0.8,   -->
-<!--           palette = "Blues" , contrast=.7,  -->
-<!--           title = paste("Hidrografia", "\n", -->
-<!--                         "Amazônia Legal - 2007"))+ -->
-<!--   tm_shape(stateslegalamazon)+ -->
-<!--   tm_borders(col= "black", lwd= 1.5)+ -->
-<!--   tm_shape(limitslegalamazon)+ -->
-<!--   tm_borders(col= "black", lwd= 1.5)+ -->
-<!--   tm_layout(legend.title.size = 0.8, -->
-<!--             legend.text.size = 0.6, -->
-<!--             legend.position = c("right","bottom"), -->
-<!--             legend.bg.color = "white", -->
-<!--             legend.bg.alpha = .8, -->
-<!--             legend.height = 0.4, legend.hist.height = 0.4, -->
-<!--             legend.width = 0.4,legend.hist.width = 0.9, -->
-<!--             legend.outside = TRUE, -->
-<!--             frame = FALSE, bg.color="white") + -->
-<!--   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) -->
-<!-- ``` -->
+ ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
+ hidrografia_shape <- readOGR("hydrography.shp") 
+ hidrografia <- st_as_sf(hidrografia_shape, wkt = "geom") 
+ noforest_shape <- readOGR("no_forest.shp") 
+ noforest <- st_as_sf(noforest_shape, wkt = "geom") 
+ stateslegalamazon_shape <- readOGR("states_legal_amazon.shp") 
+ stateslegalamazon <- st_as_sf(stateslegalamazon_shape, wkt = "geom") 
+ limitslegalamazon_shape <- readOGR("brazilian_legal_amazon.shp") 
+ limitslegalamazon <- st_as_sf(limitslegalamazon_shape, wkt = "geom") 
+ areaindigenamazon_shape <- readOGR("indigeneous_area_legal_amazon.shp") 
+ areaindigenamazon <- st_as_sf(areaindigenamazon_shape, wkt = "geom") 
+ tmap_mode("plot") 
+ tm_shape(noforest) + 
+   tm_fill("AREA_KM", style = "quantile", n = 5, alpha= 0.8, 
+           palette = "Reds" , contrast=.7, 
+           title = paste("Área não florestada", "\n", 
+                         "Amazônia Legal - 2007"))+ 
+   tm_shape(areaindigenamazon) + 
+   tm_fill("modalidade", style = "cat", n = 4, alpha= 0.8,   
+           palette = "-BrBG" , contrast=.7,  
+           title = paste("Área indígena", "\n", 
+                         "Amazônia Legal"))+ 
+   tm_shape(hidrografia) + 
+   tm_fill("AREA_KM", style = "quantile", n = 5, alpha= 0.8,   
+           palette = "Blues" , contrast=.7,  
+           title = paste("Hidrografia", "\n", 
+                         "Amazônia Legal - 2007"))+ 
+   tm_shape(stateslegalamazon)+ 
+   tm_borders(col= "black", lwd= 1.5)+ 
+   tm_shape(limitslegalamazon)+ 
+   tm_borders(col= "black", lwd= 1.5)+ 
+   tm_layout(legend.title.size = 0.8, 
+             legend.text.size = 0.6, 
+             legend.position = c("right","bottom"), 
+             legend.bg.color = "white", 
+             legend.bg.alpha = .8, 
+             legend.height = 0.4, legend.hist.height = 0.4, 
+             legend.width = 0.4,legend.hist.width = 0.9, 
+             legend.outside = TRUE, 
+             frame = FALSE, bg.color="white") + 
+   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
+ ``` 
 
 
 
