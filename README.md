@@ -18,7 +18,7 @@ Um curso introdutório dos pacotes ggplot2 e tmap disponíveis no R
 <a href="https://drive.google.com/drive/folders/1_xTe5X78m2GqNT4OB1ZSNkYFtnauSUZU?usp=sharing">
 <img src="man/figuras/shp.png" alt="" width="30%"> </a>    
 
-<a href="https://drive.google.com/drive/folders/1KtN4qiMDMiebQkyGuFq8MhN8tIPXASS-?usp=sharing">
+<a href="https://drive.google.com/file/d/1T7iqLmKq9i6wPochJg8AKHYSZZEIojSJ/view?usp=sharing">
 <img src="man/figuras/data.png" alt="" width="30%"> </a>   
 
 </p>
