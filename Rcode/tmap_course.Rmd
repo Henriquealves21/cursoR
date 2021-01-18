@@ -1,0 +1,387 @@
+---
+title: 'Pacote tmap: um curso introdutório'
+author: 
+ - Henrique José de Paula Alves^[Diest/Ipea RJ, jpahenrique@gmail.com]
+date: "20/01/2021"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+link-citations: yes
+bibliography: bib.bib
+urlcolor: blue
+---
+<style>
+body {
+  text-align: justify;
+  font-size: 12pt;
+  }
+code.r{
+  font-size: 10px;
+}
+pre {
+  font-size: 12px
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Carregando os pacotes necessários
+
+Inicialmente nós vamos carregar no R os pacotes que serão utilizados ao longo do curso.
+
+```{r ,echo=TRUE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(tmap)
+require(rgdal)
+library(spdep)
+library(rgeos)
+library(sf)
+library(dplyr)
+library(tidyr)
+library(RColorBrewer)
+```
+## Porque utilizar mapas?
+
+Um satisfatório e importante aspecto da pesquisa geográfica é a comunicação dos resultados e, então, fornecer mapas - uma arte da cartografia - envolve comunicação, intuição e também um pouco de criatividade. Mapas estatísticos podem ser fornecidos no `R` com um simples `plot()`. Entretanto, é possível criar mapas avançados usando métodos da base do `R` e o pacote `tmap` (@tmap) permite a construção desses mapas. Mas o que são mapas?
+
+"Mapas são uma expressão da necessidade humana de conhecer e representar o seu espaço". Existem dois tipos de mapas: físicos - geomorfológico, climático, hidrográfico, biogeográfico; humanos - político, econômico, demográfico, histórico, rodoviário, topográfico (@mapa).
+
+Mapas estatísticos são o tipo mais comum de visualização de resultados para a geocomputação. O pacote `tmap` é uma poderosa e flexível ferramenta que possui uma sintaxe concisa para a criação de mapas atrativos com o mínimo de códigos de programação e é bem familiar ao pacote `ggplot2`. 
+
+
+## Um exemplo simples da construção de um mapa no R usando o pacote tmap
+
+O pacote `tmap` também utiliza a ideia de gramática de gráficos e envolve a separação entre a entrada dos dados (input) e a estética (como os dados são visualizados): cada `dataset` introduzido pode ser mapeado de formas diferentes incluindo a localização do mapa (geometria), cores e outras variáveis visuais. Algumas funções são básicas, tais como `tm_shape`, que define a entrada dos dados, um objeto do tipo raster ou vetor; `tm_fill`, que adiciona camadas de preenchimento aos dados e  a função `tm_border` que adiciona a borda da área do mapa. Vejamos um exemplo de um mapa da Nova Zelândia disponível no pacote `tmap`. 
+
+```{r , echo=TRUE, fig.height = 5, fig.width = 8, fig.align = "center"}
+tmap_mode("plot")
+tm_shape(nz) +
+  tm_fill() 
+```
+
+```{r , echo=TRUE, fig.height = 5, fig.width = 8, fig.align = "center"}
+# Add border layer to nz shape
+tmap_mode("plot")
+tm_shape(nz) +
+  tm_borders() 
+```
+
+```{r , echo=TRUE, fig.height = 5, fig.width = 8, fig.align = "center"}
+# Add fill and border layers to nz shape
+tmap_mode("plot")
+tm_shape(nz) +
+  tm_fill() +
+  tm_borders()
+```
+É possível, assim como no pacote `ggplot2`, fornecer uma estética para os mapas construídos com o pacote `tmap`. Vejamos um exemplo.
+
+```{r , echo=TRUE, fig.height = 5, fig.width = 8, fig.align = "center"}
+tmap_mode("plot")
+ma1 <- tm_shape(nz) + tm_fill(col = "red") + tm_style("bw")
+ma2 <- tm_shape(nz) + tm_fill(col = "red", alpha = 0.3) + tm_style("classic")
+ma3 <- tm_shape(nz) + tm_borders(col = "blue") + tm_style("cobalt")
+ma4 <- tm_shape(nz) + tm_borders(lwd = 3) + tm_style("col_blind")
+ma5 <- tm_shape(nz) + tm_borders(lty = 2) + tm_layout(bg.color = "lightblue")
+ma6 <- tm_shape(nz) + tm_fill(col = "red", alpha = 0.3) +
+  tm_borders(col = "blue", lwd = 3, lty = 2) + tm_style("beaver")
+tmap_arrange(ma1, ma2, ma3, ma4, ma5, ma6)
+```
+
+Outro exemplo incluindo uma legenda e também uma variável (área).
+
+```{r , echo=TRUE, fig.height = 5, fig.width = 8, fig.align = "center"}
+tmap_mode("plot")
+ tm_shape(nz) + 
+  tm_fill(col = "Land_area", title = expression("Area (km"^2*")")) +
+  tm_borders(col = "blue") + tm_style("classic")
+```
+
+
+Por ser um curso introdutório, será utilizado, especificamente, sete funções do pacote `tmap`: `qtm`, `tm_shape`, `tm_fill`, `tm_borders`, `tm_layout`, `tm_compass` e `tm_text`. 
+
+*Função qtm (Quick Thematic Map Plot)*
+
+Essa função desenha um mapa temático rapidamente, se tratando de um método conveniente de plotagem do pacote `tmap`, não necessitando de argumentos ou algum termo de pesquisa. 
+
+Vejamos um primeiro exemplo considerando a variável `Life expectancy (life_exp)`, que trata do tempo médio de vida esperado em cada um dos países no mundo (expectativa de vida).
+
+```{r , echo=TRUE, fig.height = 5, fig.width = 8, fig.align = "center"}
+tmap_mode("plot")
+data("World")
+
+qtm(World, fill = "life_exp")
+```
+
+Vejamos um segundo exemplo com os dados denominado `World`, da classe sf (Simple Features), considerando a variável `Happy Planet Index (HPI)`, que é um índice de bem-estar humano e impacto ambiental que foi introduzido pela New Economics Foundation em 2006. O valor do HPI de cada país é uma função de sua satisfação subjetiva de vida média, expectativa de vida ao nascer e o impacto ecológico per capita. Uma melhor explicação pode ser encontrada em [HPI](http://happyplanetindex.org/about#how).
+
+```{r , echo=TRUE, fig.height = 5, fig.width = 8, fig.align = "center"}
+tmap_mode("view")
+data("World")
+
+qtm(World, filter= World$name %in% c("Russia", "Brazil", "France", "United States"), 
+    symbols.size = "HPI", symbols.col = "red", text = "name", text.size = 0.6, 
+    style ="cobalt")
+```
+
+Mas o que significa ser da classe `sf`? Em geral, arquivos que contém o formato de um mapa são denominados de `Shape.file`, que são uma junção de 3 arquivos contendos os pontos, as linhas e os polígonos formadores do mapa da região de interesse, não pertencem a classe `sf`. Por isso, nós vamos utilizar o pacote de mesmo nome disponível no `R` para transformar um arquivo do tipo `Shape.file` em um objeto da classe `sf`. Entretanto, antes nós precisamos ler o arquivo `Shape.file` no R e vamos utilizar a função `readOGR` do pacote `rgdal` que por sua vez é dependente do pacote `spdep`. Para maior esclarecimento, denominam-se `shapes` os arquivos que contém os elementos gráficos, em formato de ponto, linhas ou polígonos, contendo coordenadas geográficas de um elemento para que possa ser transformado em um mapa. O `shape` é formado por três arquivos principais individuais que armazenam os dados: o arquivo “.shp”, “.shx” e “.dbf”. Além disso, podem ser acompanhados de arquivos “.prj”, “.sbn” e “.sbx”.
+
+Os arquivos do tipo `Shape.file` do Brasil estão disponíveis na página do `Instituto Brasileiro de Geografia e Estatística (IBGE)` sendo esses dispostos por municípios, unidades da federação, microrregiões e também por mesorregiões. Os arquivo do tipo `Shape.file` podem ser baixados aqui [IBGE](ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2019/Brasil/BR/). Um outro caminho para baixar arquivos do tipo `Shape.file` do Brasil estão disponibilizados no `Instituto de Pesquisa Econômica Aplicada (Ipea)` [Ipea](https://www.ipea.gov.br/ipeageo/malhas.html) que possui uma variedade de possibilidades de obtenção desses arquivos. **Lembre-se: os arquivos do tipo `Shape.file` são essenciais para a construção de mapas**.
+
+Vamos considerar como um exemplo o `Shape.file` do Brasil com todas as microrregiões. Nós já mostramos onde baixá-lo.
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE}
+shp <- readOGR("BRMIE250GC_SIR.shp")
+SHP <- st_as_sf(shp, wkt = "geom")
+head(SHP)
+```
+
+Agora nosso objeto `SHP` contém todas as informações que um arquivo `sf` deve ter para gerar um mapa no R utilizando o pacote `tmap`. Como exemplo, nós agora vamos gerar um mapa do Brasil dividido em microrregiões considerando os 5 clusters mais plausíveis de suicídios causados por arma de fogo, no ano de 2018, identificados pelo método scan circular desenvolvido por (@kulldorff1997). Entretanto, precisamos criar uma coluna que contém a variável `Cluster` e para isso vamos usar a função `mutate` do pacote `dplyr`. Os dados foram obtidos no [DATASUS](http://www2.datasus.gov.br/DATASUS/index.php?area=02). Nós também vamos utilizar a função `if_else` disponível no pacote `dplyr`.
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"}
+subdatatime <- as.matrix(seq(2008,2018,1))
+i=11
+tmap_mode("view")
+Shp <- SHP %>% 
+  mutate(Cluster = if_else(CD_GEOCMI	==	41025	|	CD_GEOCMI	==	41033	|
+          CD_GEOCMI	==	43020	| CD_GEOCMI	==	41026	|	CD_GEOCMI	==	41034	|
+          CD_GEOCMI	==	43021	| CD_GEOCMI	==	41027	|	CD_GEOCMI	==	43015	|	
+          CD_GEOCMI	==	43022	| CD_GEOCMI	==	41029	|	CD_GEOCMI	==	43016	|
+          CD_GEOCMI	==	43023	| CD_GEOCMI	==	41030	|	CD_GEOCMI	==	43017	|	
+          CD_GEOCMI	==	43024	| CD_GEOCMI	==	41032	|	CD_GEOCMI	==	43019	|
+          CD_GEOCMI	==	43025, "Cluster 1",
+          if_else(CD_GEOCMI	==	52014, "Cluster 2",
+          if_else(CD_GEOCMI	==	52005, "Cluster 4",
+          if_else(CD_GEOCMI	==	35053, "Cluster 5", 
+          if_else(CD_GEOCMI	==	31026, "Cluster 3","Outros"))))))
+qtm(Shp, fill="Cluster", fill.palette = "-Reds")
+```
+
+No entanto ao apresentarmos os mapas anteriores utilizando a função `qtm`, nós notamos que o usuário não tem controle total sobre alguns aspectos que compõem um mapa temático. Então, vamos agora apresentar conjuntamente as funções `tm_shape`, `tm_fill`, `tm_borders`, `tm_layout`, `tm_compass` e `tm_text` de forma gradativa. Vale ressaltar que o pacote `tmap` contém uma grande variedade de funções, que vão muito além das aqui especificadas. 
+
+Vamos, primeiramente, descrever cada das funções aqui mencionadas pertencentes ao pacote `tmap`.
+
+*Função tm_shape*
+
+Cria um elemento `tmap` que especifica um objeto de dados espaciais, ao qual nos referimos como `shape`. Além disso, a projeção e a área coberta são definidas e é possível usar vários objetos `shape` em um mesmo mapa.
+
+*Função tm_fill* 
+
+Cria um elemento `tmap` que preenche os polígonos, podendo ser utilizado uma única cor fixa ou ainda um palette de cores para uma variável pertecente ao conjunto de dados.
+
+*Função tm_borders*
+
+Cria um elemento `tmap` que define as bordas dos polígonos formadores do mapa. A cor, a largura e o tipo da linha podem ser aqui definidos.
+
+*Função tm_layout*
+
+Essa função especifica o `layout` do mapa e controla título, margens, proporção de aspecto, cores, moldura, legenda, entre muitos outros aspectos relacionados ao mapa.
+
+*Função tm_compass*
+
+Cria uma bússola de mapa.
+
+*Função tm_text*
+
+Cria um elemento `tmap` que adiciona rótulos de texto
+
+No próximo exemplo, vamos primeiramente carregar o `Shape.file` referente às unidades federativas brasileiras. Feito iso, vamos construir o mesmo mapa de clusters de suicídios nas microrregiões brasileiras no ano de 2018 utilizado anteriormente. 
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"}
+UF <- readOGR("BRUFE250GC_SIR.shp")
+uf <-  st_as_sf(UF, wkt = "geom")
+head(uf)
+Shp <- SHP %>% 
+  mutate(Cluster = if_else(CD_GEOCMI	==	41025	|	CD_GEOCMI	==	41033	|
+          CD_GEOCMI	==	43020	| CD_GEOCMI	==	41026	|	CD_GEOCMI	==	41034	|
+          CD_GEOCMI	==	43021	| CD_GEOCMI	==	41027	|	CD_GEOCMI	==	43015	|	
+          CD_GEOCMI	==	43022	| CD_GEOCMI	==	41029	|	CD_GEOCMI	==	43016	|
+          CD_GEOCMI	==	43023	| CD_GEOCMI	==	41030	|	CD_GEOCMI	==	43017	|	
+          CD_GEOCMI	==	43024	| CD_GEOCMI	==	41032	|	CD_GEOCMI	==	43019	|
+          CD_GEOCMI	==	43025, "Cluster 1",
+          if_else(CD_GEOCMI	==	52014, "Cluster 2",
+          if_else(CD_GEOCMI	==	52005, "Cluster 4",
+          if_else(CD_GEOCMI	==	35053, "Cluster 5", 
+          if_else(CD_GEOCMI	==	31026, "Cluster 3","Outros"))))))
+uf <- uf %>%
+  mutate(sigla = if_else(CD_GEOCUF == 12, "AC",  if_else(CD_GEOCUF == 27, "AL",
+                  if_else(CD_GEOCUF == 16, "AP", if_else(CD_GEOCUF == 29, "BA",
+                  if_else(CD_GEOCUF == 29, "BA", if_else(CD_GEOCUF == 23, "CE",
+                  if_else(CD_GEOCUF == 53, "DF", if_else(CD_GEOCUF == 32, "ES",
+                  if_else(CD_GEOCUF == 52, "GO", if_else(CD_GEOCUF == 21, "MA",
+                  if_else(CD_GEOCUF == 51, "MT", if_else(CD_GEOCUF == 50, "MS",
+                  if_else(CD_GEOCUF == 31, "MG", if_else(CD_GEOCUF == 15, "PA",
+                  if_else(CD_GEOCUF == 25, "PB", if_else(CD_GEOCUF == 26, "PE",
+                  if_else(CD_GEOCUF == 22, "PI", if_else(CD_GEOCUF == 33, "RJ",
+                  if_else(CD_GEOCUF == 24, "RN", if_else(CD_GEOCUF == 43, "RS",
+                  if_else(CD_GEOCUF == 14, "RR", if_else(CD_GEOCUF == 42, "SC",
+                  if_else(CD_GEOCUF == 35, "SP", if_else(CD_GEOCUF == 28, "SE",
+                  if_else(CD_GEOCUF == 17, "TO", if_else(CD_GEOCUF == 41, "PR",
+                  if_else(CD_GEOCUF == 11, "RO", "AM"))))))))))))))))))))))))))))
+tmap_mode("plot")
+tm_shape(Shp) +
+  tm_fill("Cluster", style = "cat", n = 6, palette = c("red", "#FF7F50",
+                                    "pink", "#4682B4", "#87CEEB", "white"),
+          title = paste("Clusters de suicídios - 2018"))+
+  tm_shape(Shp)+
+  tm_borders(col="darkgray", lwd=1)+
+  tm_shape(uf)+
+  tm_borders(col= "black", lwd= 1.5) +
+  tm_text("sigla", just = "left", xmod = -0.82, size = 0.5, col = "#000080")+
+  tm_layout(legend.title.size = 0.8,
+            legend.text.size = 0.6,
+            legend.position = c("right","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = .8,
+            legend.height = 0.4, legend.hist.height = 0.4,
+            legend.width = 0.4,legend.hist.width = 0.9,
+            legend.outside = FALSE,
+            frame = FALSE, bg.color="white") +
+  tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2)
+```
+
+<!-- ## Mapas interativos COVID-$19$ -->
+
+<!-- Vamos agora construir mapas interativos com dados de COVID-$19$, a doença que hoje é a maior preucupação das áreas correlatas da saúde no Brasil e no mundo. O `R` possui um pacote chamado `covid19br` (@covid19br) que possui dados coletados, tanto no Brasil quanto no mundo, a cada semana desde o início da pandemia, sendo que esse pacote é atualizado semanalmente. Nesse momento é necessário lembrar que o pacote em questão já deve estar instalado no seu `R` em sua máquina. -->
+
+<!-- ```{r , echo=TRUE, message=FALSE, warning=FALSE} -->
+<!-- library(covid19br) -->
+<!-- ``` -->
+
+<!-- Vamos agora construir mapas interativos ilustrando a situação atual do Brasil, por exemplo, por unidade de federação, em relação ao surgimento de casos novos e será exibido em forma de um mapa. Para tal, vamos utilizar os seguintes comandos. -->
+
+<!-- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} -->
+<!-- i=2021 -->
+<!-- data <- downloadCovid19("states") -->
+<!-- View(data) -->
+<!-- data_new <- data %>% -->
+<!-- filter(date == "2021-01-02") %>% -->
+<!-- mutate(sigla = state) -->
+<!-- View(data_new) -->
+<!-- shape <- inner_join(uf, data_new, "sigla") -->
+<!-- tmap_mode("plot") -->
+<!-- tm_shape(shape) + -->
+<!--   tm_fill("newCases", style = "cat", n = 27,  -->
+<!--           palette = heat.colors(27, rev = TRUE, alpha = 0.5) , -->
+<!--           title = paste("Novos casos - COVID-19 - 2021-01-02"))+ -->
+<!--   tm_borders(col="darkgray", lwd=0.7)+ -->
+<!--   tm_shape(shape)+ -->
+<!--   tm_borders(col= "black", lwd= 1.5)+ -->
+<!--   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", -->
+<!--           auto.palette.mapping=TRUE, fontfamily = "serif")+ -->
+<!--   tm_layout(legend.title.size = 1, -->
+<!--             legend.text.size = 0.8, -->
+<!--             legend.position = c("right","bottom"), -->
+<!--             legend.bg.color = "white", -->
+<!--             legend.bg.alpha = .8, -->
+<!--             legend.height = 0.4, legend.hist.height = 0.4, -->
+<!--             legend.width = 0.4,legend.hist.width = 0.9, -->
+<!--             legend.outside = FALSE, -->
+<!--             frame = FALSE, bg.color="white") + -->
+<!--   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) -->
+<!-- ``` -->
+
+<!-- Vamos agora utilizar o mesmo conjunto de dados `shape` criado anteriormente para construir alguns outros mapas a partir de alguns indicadores, como a `letalidade` e `incidência` das unidades federativas brasileiras considerando o dia 10-01-2021. -->
+
+<!-- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} -->
+<!-- shape <- inner_join(uf, data_new, "sigla") %>% -->
+<!--   mutate(letalidade = accumDeaths/accumCases*100) -->
+<!-- tmap_mode("plot") -->
+<!-- tm_shape(shape) + -->
+<!--   tm_fill("letalidade", style = "quantile", n = 5,  -->
+<!--           palette = "Reds" , -->
+<!--           title = paste("Letalidade COVID-19 - 10-01-2021"))+ -->
+<!--   tm_borders(col="darkgray", lwd=0.7)+ -->
+<!--   tm_shape(shape)+ -->
+<!--   tm_borders(col= "black", lwd= 1.5) + -->
+<!--   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", -->
+<!--           auto.palette.mapping=TRUE, fontfamily = "serif")+ -->
+<!--   tm_layout(legend.title.size = 0.8, -->
+<!--             legend.text.size = 0.6, -->
+<!--             legend.position = c("right","bottom"), -->
+<!--             legend.bg.color = "white", -->
+<!--             legend.bg.alpha = .8, -->
+<!--             legend.height = 0.4, legend.hist.height = 0.4, -->
+<!--             legend.width = 0.4,legend.hist.width = 0.9, -->
+<!--             legend.outside = TRUE, -->
+<!--             frame = FALSE, bg.color="white") + -->
+<!--   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) -->
+<!-- ``` -->
+
+<!-- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} -->
+<!-- shape <- inner_join(uf, data_new, "sigla") %>% -->
+<!--   mutate( incidencia = newCases/pop*100) -->
+<!-- tmap_mode("plot") -->
+<!-- tm_shape(shape) + -->
+<!--   tm_fill("incidencia", style = "quantile", n = 5, alpha= 0.8,   -->
+<!--           palette = "PuBu" , contrast=.7,  -->
+<!--           title = paste("Incidência COVID-19 - 10-01-2021"))+ -->
+<!--   tm_borders(col="darkgray", lwd=0.7)+ -->
+<!--   tm_shape(shape)+ -->
+<!--   tm_borders(col= "black", lwd= 1.5)+ -->
+<!--   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black",  -->
+<!--           auto.palette.mapping=TRUE, fontfamily = "serif")+ -->
+<!--   tm_layout(legend.title.size = 0.8, -->
+<!--             legend.text.size = 0.6, -->
+<!--             legend.position = c("right","bottom"), -->
+<!--             legend.bg.color = "white", -->
+<!--             legend.bg.alpha = .8, -->
+<!--             legend.height = 0.4, legend.hist.height = 0.4, -->
+<!--             legend.width = 0.4,legend.hist.width = 0.9, -->
+<!--             legend.outside = FALSE, -->
+<!--             frame = FALSE, bg.color="white") + -->
+<!--   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) -->
+<!-- ``` -->
+
+<!-- Vamos agora produzir alguns mapas relacionados a desmatamentos, áreas não florestadas e hidrofrafias da Amazônia Legal brasileira. Os dados foram retirados do site [terrabrasilis](http://terrabrasilis.dpi.inpe.br/downloads/).  -->
+
+<!-- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} -->
+<!-- hidrografia_shape <- readOGR("hydrography.shp") -->
+<!-- hidrografia <- st_as_sf(hidrografia_shape, wkt = "geom") -->
+<!-- noforest_shape <- readOGR("no_forest.shp") -->
+<!-- noforest <- st_as_sf(noforest_shape, wkt = "geom") -->
+<!-- stateslegalamazon_shape <- readOGR("states_legal_amazon.shp") -->
+<!-- stateslegalamazon <- st_as_sf(stateslegalamazon_shape, wkt = "geom") -->
+<!-- limitslegalamazon_shape <- readOGR("brazilian_legal_amazon.shp") -->
+<!-- limitslegalamazon <- st_as_sf(limitslegalamazon_shape, wkt = "geom") -->
+<!-- areaindigenamazon_shape <- readOGR("indigeneous_area_legal_amazon.shp") -->
+<!-- areaindigenamazon <- st_as_sf(areaindigenamazon_shape, wkt = "geom") -->
+<!-- tmap_mode("plot") -->
+<!-- tm_shape(noforest) + -->
+<!--   tm_fill("AREA_KM", style = "quantile", n = 5, alpha= 0.8, -->
+<!--           palette = "Reds" , contrast=.7, -->
+<!--           title = paste("Área não florestada", "\n", -->
+<!--                         "Amazônia Legal - 2007"))+ -->
+<!--   tm_shape(areaindigenamazon) + -->
+<!--   tm_fill("modalidade", style = "cat", n = 4, alpha= 0.8,   -->
+<!--           palette = "-BrBG" , contrast=.7,  -->
+<!--           title = paste("Área indígena", "\n", -->
+<!--                         "Amazônia Legal"))+ -->
+<!--   tm_shape(hidrografia) + -->
+<!--   tm_fill("AREA_KM", style = "quantile", n = 5, alpha= 0.8,   -->
+<!--           palette = "Blues" , contrast=.7,  -->
+<!--           title = paste("Hidrografia", "\n", -->
+<!--                         "Amazônia Legal - 2007"))+ -->
+<!--   tm_shape(stateslegalamazon)+ -->
+<!--   tm_borders(col= "black", lwd= 1.5)+ -->
+<!--   tm_shape(limitslegalamazon)+ -->
+<!--   tm_borders(col= "black", lwd= 1.5)+ -->
+<!--   tm_layout(legend.title.size = 0.8, -->
+<!--             legend.text.size = 0.6, -->
+<!--             legend.position = c("right","bottom"), -->
+<!--             legend.bg.color = "white", -->
+<!--             legend.bg.alpha = .8, -->
+<!--             legend.height = 0.4, legend.hist.height = 0.4, -->
+<!--             legend.width = 0.4,legend.hist.width = 0.9, -->
+<!--             legend.outside = TRUE, -->
+<!--             frame = FALSE, bg.color="white") + -->
+<!--   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) -->
+<!-- ``` -->
+
+
+
+
+
