@@ -112,7 +112,6 @@ Vejamos um primeiro exemplo considerando a variável `Life expectancy (life_exp)
 ```{r , echo=TRUE, fig.height = 5, fig.width = 8, fig.align = "center"}
 tmap_mode("plot")
 data("World")
-
 qtm(World, fill = "life_exp")
 ```
 
@@ -121,7 +120,6 @@ Vejamos um segundo exemplo com os dados denominado `World`, da classe sf (Simple
 ```{r , echo=TRUE, fig.height = 5, fig.width = 8, fig.align = "center"}
 tmap_mode("view")
 data("World")
-
 qtm(World, filter= World$name %in% c("Russia", "Brazil", "France", "United States"), 
     symbols.size = "HPI", symbols.col = "red", text = "name", text.size = 0.6, 
     style ="cobalt")
@@ -190,10 +188,14 @@ Cria um elemento `tmap` que adiciona rótulos de texto
 
 No próximo exemplo, vamos primeiramente carregar o `Shape.file` referente às unidades federativas brasileiras. Feito iso, vamos construir o mesmo mapa de clusters de suicídios nas microrregiões brasileiras no ano de 2018 utilizado anteriormente. 
 
-```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"}
+```{r , echo = TRUE, message=FALSE, warning=FALSE}
 UF <- readOGR("BRUFE250GC_SIR.shp")
 uf <-  st_as_sf(UF, wkt = "geom")
 head(uf)
+```
+
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"}
 Shp <- SHP %>% 
   mutate(Cluster = if_else(CD_GEOCMI	==	41025	|	CD_GEOCMI	==	41033	|
           CD_GEOCMI	==	43020	| CD_GEOCMI	==	41026	|	CD_GEOCMI	==	41034	|
@@ -221,7 +223,7 @@ uf <- uf %>%
                   if_else(CD_GEOCUF == 35, "SP", if_else(CD_GEOCUF == 28, "SE",
                   if_else(CD_GEOCUF == 17, "TO", if_else(CD_GEOCUF == 41, "PR",
                   if_else(CD_GEOCUF == 11, "RO", "AM"))))))))))))))))))))))))))))
-tmap_mode("plot")
+tmap_mode("view")
 tm_shape(Shp) +
   tm_fill("Cluster", style = "cat", n = 6, palette = c("red", "#FF7F50",
                                     "pink", "#4682B4", "#87CEEB", "white"),
@@ -229,18 +231,18 @@ tm_shape(Shp) +
   tm_shape(Shp)+
   tm_borders(col="darkgray", lwd=1)+
   tm_shape(uf)+
-  tm_borders(col= "black", lwd= 1.5) +
-  tm_text("sigla", just = "left", xmod = -0.82, size = 0.5, col = "#000080")+
-  tm_layout(legend.title.size = 0.8,
-            legend.text.size = 0.6,
-            legend.position = c("right","bottom"),
-            legend.bg.color = "white",
-            legend.bg.alpha = .8,
-            legend.height = 0.4, legend.hist.height = 0.4,
-            legend.width = 0.4,legend.hist.width = 0.9,
-            legend.outside = FALSE,
-            frame = FALSE, bg.color="white") +
-  tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2)
+  tm_borders(col= "black", lwd= 1.5) 
+  # tm_text("sigla", just = "left", xmod = -0.82, size = 0.5, col = "#000080")+
+  # tm_layout(legend.title.size = 0.8,
+  #           legend.text.size = 0.6,
+  #           legend.position = c("right","bottom"),
+  #           legend.bg.color = "white",
+  #           legend.bg.alpha = .8,
+  #           legend.height = 0.4, legend.hist.height = 0.4,
+  #           legend.width = 0.4,legend.hist.width = 0.9,
+  #           legend.outside = FALSE,
+  #           frame = FALSE, bg.color="white") +
+  # tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2)
 ```
 
  ## Mapas interativos COVID-$19$ 
@@ -252,9 +254,10 @@ tm_shape(Shp) +
  ``` 
 
  Vamos agora construir mapas interativos ilustrando a situação atual do Brasil, por exemplo, por unidade de federação, em relação ao surgimento de casos novos e será exibido em forma de um mapa. Para tal, vamos utilizar os seguintes comandos. 
+ 
 
- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
- i=2021 
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
  data <- downloadCovid19("states") 
  View(data) 
  data_new <- data %>% 
@@ -262,83 +265,83 @@ tm_shape(Shp) +
  mutate(sigla = state) 
  View(data_new) 
  shape <- inner_join(uf, data_new, "sigla") 
- tmap_mode("plot") 
+ tmap_mode("view") 
  tm_shape(shape) + 
    tm_fill("newCases", style = "cat", n = 27,  
            palette = heat.colors(27, rev = TRUE, alpha = 0.5) , 
            title = paste("Novos casos - COVID-19 - 2021-01-02"))+ 
    tm_borders(col="darkgray", lwd=0.7)+ 
    tm_shape(shape)+ 
-   tm_borders(col= "black", lwd= 1.5)+ 
-   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", 
-           auto.palette.mapping=TRUE, fontfamily = "serif")+ 
-   tm_layout(legend.title.size = 1, 
-             legend.text.size = 0.8, 
-             legend.position = c("right","bottom"), 
-             legend.bg.color = "white", 
-             legend.bg.alpha = .8, 
-             legend.height = 0.4, legend.hist.height = 0.4, 
-             legend.width = 0.4,legend.hist.width = 0.9, 
-             legend.outside = FALSE, 
-             frame = FALSE, bg.color="white") + 
-   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
- ``` 
+   tm_borders(col= "black", lwd= 1.5) 
+   # tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", 
+   #         auto.palette.mapping=TRUE, fontfamily = "serif")+ 
+   # tm_layout(legend.title.size = 1, 
+   #           legend.text.size = 0.8, 
+   #           legend.position = c("right","bottom"), 
+   #           legend.bg.color = "white", 
+   #           legend.bg.alpha = .8, 
+   #           legend.height = 0.4, legend.hist.height = 0.4, 
+   #           legend.width = 0.4,legend.hist.width = 0.9, 
+   #           legend.outside = FALSE, 
+   #           frame = FALSE, bg.color="white") + 
+   # tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
+``` 
 
  Vamos agora utilizar o mesmo conjunto de dados `shape` criado anteriormente para construir alguns outros mapas a partir de alguns indicadores, como a `letalidade` e `incidência` das unidades federativas brasileiras considerando o dia 10-01-2021. 
 
- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
+```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
  shape <- inner_join(uf, data_new, "sigla") %>% 
    mutate(letalidade = accumDeaths/accumCases*100) 
- tmap_mode("plot") 
+ tmap_mode("view") 
  tm_shape(shape) + 
    tm_fill("letalidade", style = "quantile", n = 5,  
            palette = "Reds" , 
            title = paste("Letalidade COVID-19 - 10-01-2021"))+ 
    tm_borders(col="darkgray", lwd=0.7)+ 
    tm_shape(shape)+ 
-   tm_borders(col= "black", lwd= 1.5) + 
-   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", 
-           auto.palette.mapping=TRUE, fontfamily = "serif")+ 
-   tm_layout(legend.title.size = 0.8, 
-             legend.text.size = 0.6, 
-             legend.position = c("right","bottom"), 
-             legend.bg.color = "white", 
-             legend.bg.alpha = .8, 
-             legend.height = 0.4, legend.hist.height = 0.4, 
-             legend.width = 0.4,legend.hist.width = 0.9, 
-             legend.outside = TRUE, 
-             frame = FALSE, bg.color="white") + 
-   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
- ``` 
+   tm_borders(col= "black", lwd= 1.5) 
+   # tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", 
+   #         auto.palette.mapping=TRUE, fontfamily = "serif")+ 
+   # tm_layout(legend.title.size = 0.8, 
+   #           legend.text.size = 0.6, 
+   #           legend.position = c("right","bottom"), 
+   #           legend.bg.color = "white", 
+   #           legend.bg.alpha = .8, 
+   #           legend.height = 0.4, legend.hist.height = 0.4, 
+   #           legend.width = 0.4,legend.hist.width = 0.9, 
+   #           legend.outside = TRUE, 
+   #           frame = FALSE, bg.color="white") + 
+   # tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
+``` 
 
- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
+```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
  shape <- inner_join(uf, data_new, "sigla") %>% 
    mutate( incidencia = newCases/pop*100) 
- tmap_mode("plot") 
+ tmap_mode("view") 
  tm_shape(shape) + 
    tm_fill("incidencia", style = "quantile", n = 5, alpha= 0.8,   
            palette = "PuBu" , contrast=.7,  
            title = paste("Incidência COVID-19 - 10-01-2021"))+ 
    tm_borders(col="darkgray", lwd=0.7)+ 
    tm_shape(shape)+ 
-   tm_borders(col= "black", lwd= 1.5)+ 
-   tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black",  
-           auto.palette.mapping=TRUE, fontfamily = "serif")+ 
-   tm_layout(legend.title.size = 0.8, 
-             legend.text.size = 0.6, 
-             legend.position = c("right","bottom"), 
-             legend.bg.color = "white", 
-             legend.bg.alpha = .8, 
-             legend.height = 0.4, legend.hist.height = 0.4, 
-             legend.width = 0.4,legend.hist.width = 0.9, 
-             legend.outside = FALSE, 
-             frame = FALSE, bg.color="white") + 
-   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
- ``` 
+   tm_borders(col= "black", lwd= 1.5) 
+   # tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black",  
+   #         auto.palette.mapping=TRUE, fontfamily = "serif")+ 
+   # tm_layout(legend.title.size = 0.8, 
+   #           legend.text.size = 0.6, 
+   #           legend.position = c("right","bottom"), 
+   #           legend.bg.color = "white", 
+   #           legend.bg.alpha = .8, 
+   #           legend.height = 0.4, legend.hist.height = 0.4, 
+   #           legend.width = 0.4,legend.hist.width = 0.9, 
+   #           legend.outside = FALSE, 
+   #           frame = FALSE, bg.color="white") + 
+   # tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
+``` 
 
  Vamos agora produzir alguns mapas relacionados a desmatamentos, áreas não florestadas e hidrofrafias da Amazônia Legal brasileira. Os dados foram retirados do site [terrabrasilis](http://terrabrasilis.dpi.inpe.br/downloads/).  
 
- ```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
+```{r , echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 8, fig.align = "center"} 
  hidrografia_shape <- readOGR("hydrography.shp") 
  hidrografia <- st_as_sf(hidrografia_shape, wkt = "geom") 
  noforest_shape <- readOGR("no_forest.shp") 
@@ -349,7 +352,7 @@ tm_shape(Shp) +
  limitslegalamazon <- st_as_sf(limitslegalamazon_shape, wkt = "geom") 
  areaindigenamazon_shape <- readOGR("indigeneous_area_legal_amazon.shp") 
  areaindigenamazon <- st_as_sf(areaindigenamazon_shape, wkt = "geom") 
- tmap_mode("plot") 
+ tmap_mode("view") 
  tm_shape(noforest) + 
    tm_fill("AREA_KM", style = "quantile", n = 5, alpha= 0.8, 
            palette = "Reds" , contrast=.7, 
@@ -368,20 +371,15 @@ tm_shape(Shp) +
    tm_shape(stateslegalamazon)+ 
    tm_borders(col= "black", lwd= 1.5)+ 
    tm_shape(limitslegalamazon)+ 
-   tm_borders(col= "black", lwd= 1.5)+ 
-   tm_layout(legend.title.size = 0.8, 
-             legend.text.size = 0.6, 
-             legend.position = c("right","bottom"), 
-             legend.bg.color = "white", 
-             legend.bg.alpha = .8, 
-             legend.height = 0.4, legend.hist.height = 0.4, 
-             legend.width = 0.4,legend.hist.width = 0.9, 
-             legend.outside = TRUE, 
-             frame = FALSE, bg.color="white") + 
-   tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
- ``` 
-
-
-
-
-
+   tm_borders(col= "black", lwd= 1.5)
+   # tm_layout(legend.title.size = 0.8, 
+   #           legend.text.size = 0.6, 
+   #           legend.position = c("right","bottom"), 
+   #           legend.bg.color = "white", 
+   #           legend.bg.alpha = .8, 
+   #           legend.height = 0.4, legend.hist.height = 0.4, 
+   #           legend.width = 0.4,legend.hist.width = 0.9, 
+   #           legend.outside = TRUE, 
+   #           frame = FALSE, bg.color="white") + 
+   # tm_compass(type="4star", position=c("right", "top"), show.labels = 1,size=2.2) 
+``` 
