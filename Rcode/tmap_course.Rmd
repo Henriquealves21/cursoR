@@ -122,7 +122,8 @@ tmap_mode("view")
 data("World")
 qtm(World, filter= World$name %in% c("Russia", "Brazil", "France", "United States"), 
     symbols.size = "HPI", symbols.col = "red", text = "name", text.size = 0.6, 
-    style ="cobalt")
+    style ="cobalt")+
+ tm_view(alpha = 0.5, basemaps = "OpenStreetMap")
 ```
 
 Mas o que significa ser da classe `sf`? Em geral, arquivos que contém o formato de um mapa são denominados de `Shape.file`, que são uma junção de 3 arquivos contendos os pontos, as linhas e os polígonos formadores do mapa da região de interesse, não pertencem a classe `sf`. Por isso, nós vamos utilizar o pacote de mesmo nome disponível no `R` para transformar um arquivo do tipo `Shape.file` em um objeto da classe `sf`. Entretanto, antes nós precisamos ler o arquivo `Shape.file` no R e vamos utilizar a função `readOGR` do pacote `rgdal` que por sua vez é dependente do pacote `spdep`. Para maior esclarecimento, denominam-se `shapes` os arquivos que contém os elementos gráficos, em formato de ponto, linhas ou polígonos, contendo coordenadas geográficas de um elemento para que possa ser transformado em um mapa. O `shape` é formado por três arquivos principais individuais que armazenam os dados: o arquivo “.shp”, “.shx” e “.dbf”. Além disso, podem ser acompanhados de arquivos “.prj”, “.sbn” e “.sbx”.
@@ -155,7 +156,8 @@ Shp <- SHP %>%
           if_else(CD_GEOCMI	==	52005, "Cluster 4",
           if_else(CD_GEOCMI	==	35053, "Cluster 5", 
           if_else(CD_GEOCMI	==	31026, "Cluster 3","Outros"))))))
-qtm(Shp, fill="Cluster", fill.palette = "-Reds")
+qtm(Shp, fill="Cluster", fill.palette = "-Reds")+
+ tm_view(alpha = 0.5, basemaps = "OpenStreetMap")
 ```
 
 No entanto ao apresentarmos os mapas anteriores utilizando a função `qtm`, nós notamos que o usuário não tem controle total sobre alguns aspectos que compõem um mapa temático. Então, vamos agora apresentar conjuntamente as funções `tm_shape`, `tm_fill`, `tm_borders`, `tm_layout`, `tm_compass` e `tm_text` de forma gradativa. Vale ressaltar que o pacote `tmap` contém uma grande variedade de funções, que vão muito além das aqui especificadas. 
@@ -231,7 +233,8 @@ tm_shape(Shp) +
   tm_shape(Shp)+
   tm_borders(col="darkgray", lwd=1)+
   tm_shape(uf)+
-  tm_borders(col= "black", lwd= 1.5) 
+  tm_borders(col= "black", lwd= 1.5) +
+   tm_view(alpha = 0.5, basemaps = "OpenStreetMap")
   # tm_text("sigla", just = "left", xmod = -0.82, size = 0.5, col = "#000080")+
   # tm_layout(legend.title.size = 0.8,
   #           legend.text.size = 0.6,
@@ -272,7 +275,8 @@ tm_shape(Shp) +
            title = paste("Novos casos - COVID-19 - 2021-01-02"))+ 
    tm_borders(col="darkgray", lwd=0.7)+ 
    tm_shape(shape)+ 
-   tm_borders(col= "black", lwd= 1.5) 
+   tm_borders(col= "black", lwd= 1.5) +
+    tm_view(alpha = 0.5, basemaps = "OpenStreetMap")
    # tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", 
    #         auto.palette.mapping=TRUE, fontfamily = "serif")+ 
    # tm_layout(legend.title.size = 1, 
@@ -299,7 +303,8 @@ tm_shape(Shp) +
            title = paste("Letalidade COVID-19 - 10-01-2021"))+ 
    tm_borders(col="darkgray", lwd=0.7)+ 
    tm_shape(shape)+ 
-   tm_borders(col= "black", lwd= 1.5) 
+   tm_borders(col= "black", lwd= 1.5) +
+    tm_view(alpha = 0.5, basemaps = "OpenStreetMap")
    # tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black", 
    #         auto.palette.mapping=TRUE, fontfamily = "serif")+ 
    # tm_layout(legend.title.size = 0.8, 
@@ -324,7 +329,8 @@ tm_shape(Shp) +
            title = paste("Incidência COVID-19 - 10-01-2021"))+ 
    tm_borders(col="darkgray", lwd=0.7)+ 
    tm_shape(shape)+ 
-   tm_borders(col= "black", lwd= 1.5) 
+   tm_borders(col= "black", lwd= 1.5) +
+   tm_view(alpha = 0.5, basemaps = "OpenStreetMap")
    # tm_text("sigla", just = "left", xmod = -0.82, size = 0.7, col = "black",  
    #         auto.palette.mapping=TRUE, fontfamily = "serif")+ 
    # tm_layout(legend.title.size = 0.8, 
@@ -371,7 +377,8 @@ tm_shape(Shp) +
    tm_shape(stateslegalamazon)+ 
    tm_borders(col= "black", lwd= 1.5)+ 
    tm_shape(limitslegalamazon)+ 
-   tm_borders(col= "black", lwd= 1.5)
+   tm_borders(col= "black", lwd= 1.5) +
+    tm_view(alpha = 0.5, basemaps = "OpenStreetMap")
    # tm_layout(legend.title.size = 0.8, 
    #           legend.text.size = 0.6, 
    #           legend.position = c("right","bottom"), 
